@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Guide: Communities' Choice PB Initiative - Torfaen</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- Visualization & Content Choices:
+        - Report Intro -> Inform -> Text sections -> None -> Clarity -> HTML/CSS.
+        - Dominant Themes -> Compare/Inform -> Bar Chart -> Tooltips -> Visual overview -> Chart.js.
+        - Area-Specific Priorities -> Compare/Inform -> Bar Charts, Boundary Map Placeholders -> Tooltips, Visual context -> Chart.js, HTML img.
+        - Eligible Initiatives -> Organize/Inform -> Expandable cards/accordions -> Click to expand/collapse -> Structured detail -> HTML/CSS/JS.
+        - Exclusions/Statutory Info -> Inform -> Styled lists/tables -> None -> Clear delineation -> HTML/CSS.
+        - EOI Guidance -> Organize/Inform -> Structured text -> None -> Step-by-step guidance -> HTML/CSS/JS.
+        - CONFIRMING NO SVG/Mermaid. All charts are Canvas-based via Chart.js. Diagrams are HTML/CSS. Map images are placeholders.
+    -->
+    <style>
+        body { font-family: 'Inter', sans-serif; scroll-behavior: smooth; background-color: #FBF9FF; }
+        .chart-container { position: relative; width: 100%; max-width: 600px; margin-left: auto; margin-right: auto; height: 300px; max-height: 400px; }
+        @media (min-width: 768px) { .chart-container { height: 350px; } }
+        
+        :root {
+            --brand-deep-purple: #5C2D91;
+            --brand-light-purple: #8E5DB6;
+            --brand-bg-lavender: #E9D8FD;
+            --brand-accent-yellow: #FFD111;
+            --brand-accent-green: #00A859;
+            --brand-accent-blue: #00AEEF;
+            --brand-accent-pinkred: #EC008C;
+            --text-dark: #333333;
+            --text-light: #FFFFFF;
+            --card-bg: #FFFFFF;
+            --page-bg: #FBF9FF; /* Very light lavender */
+        }
+
+        body { background-color: var(--page-bg); color: var(--text-dark); }
+        .nav-link { display: block; padding: 0.75rem 1rem; margin-bottom: 0.25rem; border-radius: 0.375rem; color: var(--brand-deep-purple); text-decoration: none; transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out; font-weight: 500; }
+        .nav-link:hover { background-color: var(--brand-bg-lavender); color: var(--brand-deep-purple); }
+        .nav-link.active { background-color: var(--brand-deep-purple); color: var(--text-light); font-weight: 600; }
+        .nav-link.sub-link { padding-left: 2rem; font-size: 0.9rem; }
+        .nav-link.sub-link.active { background-color: var(--brand-light-purple); color: var(--text-light); }
+        
+        .content-section { display: none; }
+        .content-section.active { display: block; }
+        
+        .accordion-button { background-color: var(--brand-bg-lavender); border: 1px solid #D1C4E9; width: 100%; text-align: left; padding: 1rem; font-weight: 600; color: var(--brand-deep-purple); border-radius: 0.375rem; cursor: pointer; transition: background-color 0.2s; }
+        .accordion-button:hover { background-color: #D1C4E9; } /* Slightly darker lavender */
+        .accordion-content { display: none; padding: 1rem; border: 1px solid #D1C4E9; border-top: 0; border-radius: 0 0 0.375rem 0.375rem; background-color: var(--card-bg); }
+        .accordion-content.open { display: block; }
+
+        .sticky-sidebar { position: sticky; top: 1rem; height: calc(100vh - 2rem); overflow-y: auto; }
+        .sticky-sidebar::-webkit-scrollbar { width: 8px; }
+        .sticky-sidebar::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 10px; }
+        .sticky-sidebar::-webkit-scrollbar-thumb { background: var(--brand-light-purple); border-radius: 10px; }
+        .sticky-sidebar::-webkit-scrollbar-thumb:hover { background: var(--brand-deep-purple); }
+
+        .section-header-custom { color: var(--brand-deep-purple); }
+        .card-custom { background-color: var(--card-bg); }
+        .text-brand-deep-purple { color: var(--brand-deep-purple); }
+        .bg-brand-deep-purple { background-color: var(--brand-deep-purple); }
+        .border-brand-deep-purple { border-color: var(--brand-deep-purple); }
+        .logo-container img { max-height: 80px; /* Adjust as needed */ }
+    </style>
+</head>
+<body>
+
+    <div class="flex flex-col md:flex-row min-h-screen">
+        <aside class="w-full md:w-72 bg-white p-4 shadow-lg md:sticky-sidebar">
+            <div class="logo-container mb-6 pb-3 border-b border-gray-200 text-center">
+                <img src="image.png" alt="Communities Choice Logo" class="mx-auto" onerror="this.alt='Logo not found'; this.src='https://placehold.co/150x50/5C2D91/FFFFFF?text=Communities+Choice';">
+            </div>
+            <h1 class="text-xl font-bold text-brand-deep-purple mb-4 text-center">PB Initiative Guide</h1>
+            <nav id="sidebarNav">
+                <a href="#overview" class="nav-link active" data-section="overview">Overview & Purpose</a>
+                <a href="#pan-torfaen" class="nav-link" data-section="pan-torfaen">Pan-Torfaen Insights</a>
+                <div>
+                    <a href="#explore-areas" class="nav-link" data-section="explore-areas-main">Explore PB Areas</a>
+                    <div id="explore-areas-subnav" class="ml-4 border-l-2 border-purple-300 hidden">
+                        <a href="#area-trevethin" class="nav-link sub-link" data-section="area-trevethin" data-area="trevethin">Trevethin, Penygarn & St. Cadocs</a>
+                        <a href="#area-blaenavon" class="nav-link sub-link" data-section="area-blaenavon" data-area="blaenavon">Blaenavon</a>
+                        <a href="#area-thornhill" class="nav-link sub-link" data-section="area-thornhill" data-area="thornhill">Thornhill & Upper Cwmbran</a>
+                    </div>
+                </div>
+                <a href="#eoi-guidance" class="nav-link" data-section="eoi-guidance">EOI Application Guidance</a>
+                <a href="#statutory-vs-community" class="nav-link" data-section="statutory-vs-community">Statutory vs. Community</a>
+            </nav>
+        </aside>
+
+        <main class="flex-1 p-6 md:p-10 overflow-y-auto">
+            <section id="overview" class="content-section active">
+                <h2 class="text-3xl font-bold section-header-custom mb-6">Welcome to the Interactive PB Initiative Guide</h2>
+                <div class="card-custom p-6 rounded-lg shadow space-y-4">
+                    <p class="text-lg">This interactive guide provides a comprehensive overview of the **Communities' Choice Participatory Budgeting (PB) Initiative in Torfaen**. It's designed to help you understand the initiative's purpose, explore community-identified priorities for each PB area, and guide you in preparing an Expression of Interest (EOI) for funding.</p>
+                    <h3 class="text-xl font-semibold text-gray-700 mt-4">1.1 Purpose of This Guide</h3>
+                    <p>This guide translates the detailed analysis of community consultations from three Torfaen PB areas—Trevethin, Penygarn & St. Cadocs; Blaenavon; and Thornhill & Upper Cwmbran. Its primary aim is to establish clear, area-specific application guidelines for the Communities' Choice PB Initiative. These guidelines are designed to assist organisations and community groups in developing robust EOI proposals that resonate with community-identified priorities while distinctly avoiding projects that fall under statutory public funding mandates.</p>
+                    <h3 class="text-xl font-semibold text-gray-700 mt-4">1.2 The Communities' Choice PB Initiative</h3>
+                    <p>The Communities' Choice PB Initiative is a vital program aimed at deepening democratic engagement and empowering local residents. It provides a mechanism for communities to directly influence how public funds are allocated to projects that enhance their local environment, strengthen social fabric, and address specific, locally identified needs. A core principle of this initiative is to fund projects that deliver additional value beyond the services already mandated by statutory obligations, fostering community ownership and innovation.</p>
+                    <p class="mt-4 italic">Use the navigation on the left to explore different sections of the guidelines.</p>
+                </div>
+            </section>
+
+            <section id="pan-torfaen" class="content-section">
+                <h2 class="text-3xl font-bold section-header-custom mb-6">Pan-Torfaen Insights: Common Themes</h2>
+                <div class="card-custom p-6 rounded-lg shadow space-y-6">
+                    <h3 class="text-xl font-semibold text-gray-700">Dominant Non-Statutory Themes Across Torfaen</h3>
+                    <p>Across all PB areas, after filtering out requests for statutory services, several key themes for community-led action emerge. These represent significant opportunities for impactful projects.</p>
+                    <div class="chart-container my-6 h-96 md:h-[450px]">
+                        <canvas id="panTorfaenThemesChart"></canvas>
+                    </div>
+                    <ul class="list-disc list-inside space-y-2 text-gray-700">
+                        <li><strong>Youth Engagement & Activities:</strong> Strong demand for diverse, accessible opportunities.</li>
+                        <li><strong>Community Cohesion & Events:</strong> Initiatives to bring residents together.</li>
+                        <li><strong>Local Environmental & Amenity Enhancements (Community-Led):</strong> Community-driven improvements.</li>
+                        <li><strong>Health & Wellbeing Support (Community-Led):</strong> Focus on mental wellbeing, social support.</li>
+                        <li><strong>Activities & Support for Older People:</strong> Combatting isolation and enhancing quality of life.</li>
+                    </ul>
+                </div>
+            </section>
+
+            <section id="explore-areas-main" class="content-section">
+                 <h2 class="text-3xl font-bold section-header-custom mb-6">Explore Participatory Budgeting Areas</h2>
+                 <div class="card-custom p-6 rounded-lg shadow">
+                    <p class="text-lg text-gray-700">Please select a specific PB Area from the submenu on the left (click "Explore PB Areas" then choose an area) to view detailed guidelines, funding priorities, boundary maps, and eligible initiative types for that locality.</p>
+                 </div>
+            </section>
+
+            <section id="area-trevethin" class="content-section" data-area-content="trevethin">
+                <h2 class="text-3xl font-bold section-header-custom mb-1">Trevethin, Penygarn & St. Cadocs</h2>
+                <p class="text-md text-gray-600 mb-6">Application Guidelines, Priorities & Map (Non-Statutory)</p>
+                <div class="card-custom p-6 rounded-lg shadow space-y-6">
+                    <div class="mb-6 p-4 border border-brand-bg-lavender rounded-lg">
+                        <h4 class="text-lg font-semibold text-brand-deep-purple mb-2">Boundary Map</h4>
+                        <img src="https://placehold.co/600x400/E9D8FD/5C2D91?text=Trevethin+Area+Map+Placeholder" alt="Boundary Map for Trevethin, Penygarn & St. Cadocs" class="w-full max-w-md mx-auto rounded-md shadow" onerror="this.alt='Map placeholder'; this.src='https://placehold.co/600x400/E9D8FD/5C2D91?text=Map+Not+Available';">
+                        <p class="text-xs text-center mt-2 text-gray-500">Replace this placeholder with your actual map image for this area.</p>
+                    </div>
+                    <p>In this area, community consultations highlighted key themes for improvement. The Communities' Choice fund will prioritize community-led initiatives focusing on:</p>
+                    <div class="chart-container my-6 h-80 md:h-96">
+                        <canvas id="trevethinPrioritiesChart"></canvas>
+                    </div>
+                    <div id="trevethin-initiatives" class="space-y-4"></div>
+                    <h4 class="text-lg font-semibold text-red-600 mt-6">Specific Exclusions</h4>
+                    <ul class="list-disc list-inside space-y-1 text-sm text-gray-700 bg-red-50 p-4 rounded-md border border-red-200">
+                        <li>Routine road maintenance, pothole repairs.</li>
+                        <li>Core public street lighting infrastructure.</li>
+                    </ul>
+                </div>
+            </section>
+
+            <section id="area-blaenavon" class="content-section" data-area-content="blaenavon">
+                <h2 class="text-3xl font-bold section-header-custom mb-1">Blaenavon</h2>
+                <p class="text-md text-gray-600 mb-6">Application Guidelines, Priorities & Map (Non-Statutory)</p>
+                 <div class="card-custom p-6 rounded-lg shadow space-y-6">
+                    <div class="mb-6 p-4 border border-brand-bg-lavender rounded-lg">
+                        <h4 class="text-lg font-semibold text-brand-deep-purple mb-2">Boundary Map</h4>
+                        <img src="https://placehold.co/600x400/E9D8FD/5C2D91?text=Blaenavon+Map+Placeholder" alt="Boundary Map for Blaenavon" class="w-full max-w-md mx-auto rounded-md shadow" onerror="this.alt='Map placeholder'; this.src='https://placehold.co/600x400/E9D8FD/5C2D91?text=Map+Not+Available';">
+                        <p class="text-xs text-center mt-2 text-gray-500">Replace this placeholder with your actual map image for this area.</p>
+                    </div>
+                    <p>Blaenavon consultations emphasized youth engagement (ASB prevention), heritage, transport, and wellbeing. The fund will prioritize:</p>
+                    <div class="chart-container my-6 h-80 md:h-96">
+                        <canvas id="blaenavonPrioritiesChart"></canvas>
+                    </div>
+                    <div id="blaenavon-initiatives" class="space-y-4"></div>
+                    <h4 class="text-lg font-semibold text-red-600 mt-6">Specific Exclusions</h4>
+                    <ul class="list-disc list-inside space-y-1 text-sm text-gray-700 bg-red-50 p-4 rounded-md border border-red-200">
+                        <li>Core public transport infrastructure/road maintenance.</li>
+                        <li>Statutory policing functions.</li>
+                    </ul>
+                </div>
+            </section>
+
+            <section id="area-thornhill" class="content-section" data-area-content="thornhill">
+                <h2 class="text-3xl font-bold section-header-custom mb-1">Thornhill & Upper Cwmbran</h2>
+                <p class="text-md text-gray-600 mb-6">Application Guidelines, Priorities & Map (Non-Statutory)</p>
+                <div class="card-custom p-6 rounded-lg shadow space-y-6">
+                     <div class="mb-6 p-4 border border-brand-bg-lavender rounded-lg">
+                        <h4 class="text-lg font-semibold text-brand-deep-purple mb-2">Boundary Map</h4>
+                        <img src="https://placehold.co/600x400/E9D8FD/5C2D91?text=Thornhill+UC+Map+Placeholder" alt="Boundary Map for Thornhill & Upper Cwmbran" class="w-full max-w-md mx-auto rounded-md shadow" onerror="this.alt='Map placeholder'; this.src='https://placehold.co/600x400/E9D8FD/5C2D91?text=Map+Not+Available';">
+                        <p class="text-xs text-center mt-2 text-gray-500">Replace this placeholder with your actual map image for this area.</p>
+                    </div>
+                    <p>Priorities here include health (mental health, social connection), youth services, environment, community building, and skills development. The fund will prioritize:</p>
+                    <div class="chart-container my-6 h-80 md:h-96">
+                        <canvas id="thornhillPrioritiesChart"></canvas>
+                    </div>
+                    <div id="thornhill-initiatives" class="space-y-4"></div>
+                    <h4 class="text-lg font-semibold text-red-600 mt-6">Specific Exclusions</h4>
+                    <ul class="list-disc list-inside space-y-1 text-sm text-gray-700 bg-red-50 p-4 rounded-md border border-red-200">
+                        <li>Core public infrastructure (major road repairs).</li>
+                        <li>Statutory environmental services.</li>
+                    </ul>
+                </div>
+            </section>
+
+            <section id="eoi-guidance" class="content-section">
+                <h2 class="text-3xl font-bold section-header-custom mb-6">EOI Application Guidance</h2>
+                <div class="card-custom p-6 rounded-lg shadow space-y-6">
+                    <p class="text-lg">An Expression of Interest (EOI) is your first step. A strong EOI provides a clear snapshot of your project.</p>
+                    <h3 class="text-xl font-semibold text-gray-700">Defining a Strong EOI</h3>
+                    <ul class="list-disc list-inside space-y-2 text-gray-700">
+                        <li><strong>Clarity of Purpose:</strong> Align with non-statutory PB priorities.</li>
+                        <li><strong>Community Benefit & Involvement:</strong> Show broad benefits and community input.</li>
+                        <li><strong>Feasibility & Planning:</strong> Outline a realistic approach.</li>
+                    </ul>
+                    <h3 class="text-xl font-semibold text-gray-700 mt-4">Key Considerations for Applicants</h3>
+                     <ul class="list-disc list-inside space-y-2 text-gray-700">
+                        <li><strong>Focus on Non-Statutory Initiatives:</strong> Must be supplementary.</li>
+                        <li><strong>Community-Led and Delivered:</strong> Preference for grassroots projects.</li>
+                    </ul>
+                </div>
+            </section>
+
+            <section id="statutory-vs-community" class="content-section">
+                <h2 class="text-3xl font-bold section-header-custom mb-6">Understanding Scope: Statutory vs. Community-Fundable</h2>
+                <div class="card-custom p-6 rounded-lg shadow space-y-6">
+                    <p class="text-lg">A core principle is to fund projects that deliver **additional value** beyond statutory obligations.</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                        <div class="bg-green-50 p-4 rounded-lg border border-green-200">
+                            <h4 class="text-lg font-semibold text-green-700 mb-2">✅ Community-Fundable (Examples)</h4>
+                            <ul class="list-disc list-inside space-y-1 text-sm text-gray-700">
+                                <li>Volunteer-led youth clubs</li>
+                                <li>Community gardens & local greening</li>
+                            </ul>
+                        </div>
+                        <div class="bg-red-50 p-4 rounded-lg border border-red-200">
+                            <h4 class="text-lg font-semibold text-red-700 mb-2">❌ Statutory Responsibilities (Generally Ineligible)</h4>
+                            <ul class="list-disc list-inside space-y-1 text-sm text-gray-700">
+                                <li>Repair of potholes, road maintenance</li>
+                                <li>Core public street lighting</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const navLinks = document.querySelectorAll('#sidebarNav .nav-link');
+            const contentSections = document.querySelectorAll('.content-section');
+            const exploreAreasMainLink = document.querySelector('.nav-link[data-section="explore-areas-main"]');
+            const exploreAreasSubNav = document.getElementById('explore-areas-subnav');
+            let activeSubLink = null;
+
+            const initiativeData = {
+                trevethin: [
+                    { title: "Youth Services & Activities", Rationale: "Demand for diverse activities.", Examples: ["Youth clubs", "Safe spaces"], Eligible: ["Volunteer-led clubs", "Community events"] },
+                    { title: "Health & Wellbeing", Rationale: "Need for local support.", Examples: ["Wellness events", "Outdoor exercise"], Eligible: ["Peer support groups", "Fitness classes"] },
+                    { title: "Environment & Community Spaces", Rationale: "Desire for cleaner, attractive spaces.", Examples: ["Litter picking", "Community benches"], Eligible: ["Environmental improvements", "Community gardens"] },
+                    { title: "Older People's Activities", Rationale: "Addressing social isolation.", Examples: ["Elder group meet-ups", "Bus trips"], Eligible: ["Social clubs", "Day trips"] },
+                    { title: "Community Safety Initiatives", Rationale: "Preventative measures.", Examples: ["Safe area design", "Youth engagement"], Eligible: ["Environmental design", "Neighbourhood Watch support"] }
+                ],
+                blaenavon: [
+                    { title: "Youth Services (ASB Focus)", Rationale: "Link to ASB prevention.", Examples: ["Youth music", "Scout funding"], Eligible: ["Youth clubs", "Diverse activities"] },
+                    { title: "Heritage, Arts & Culture", Rationale: "Local involvement in heritage.", Examples: ["History events", "Heritage Day support"], Eligible: ["Local history research", "Community arts events"] },
+                    { title: "Health & Wellbeing", Rationale: "Community-based support.", Examples: ["Mental Health Group", "Ladies Group"], Eligible: ["Peer-led groups", "Wellbeing workshops"] },
+                    { title: "Community-Led Transport", Rationale: "Supplementary solutions.", Examples: ["Minibus", "Community taxi"], Eligible: ["Community minibus schemes", "Volunteer driver support"] },
+                    { title: "Community Cohesion", Rationale: "Improve connections.", Examples: ["Better group communication", "Info sharing"], Eligible: ["Community newsletters", "Networking events"] }
+                ],
+                thornhill: [
+                    { title: "Health & Wellbeing (Mental Focus)", Rationale: "Top priority, mental health.", Examples: ["Bereavement Counselling", "Outdoor seating"], Eligible: ["Mental health groups", "Relaxation spaces"] },
+                    { title: "Youth Services & Activities", Rationale: "Sufficient, diverse activities.", Examples: ["Youth Forum", "More Parks"], Eligible: ["Youth clubs", "Community events for youth"] },
+                    { title: "Environmental Enhancements", Rationale: "Cleanliness, appeal of spaces.", Examples: ["Litter Picking", "Reusing play park"], Eligible: ["Environmental improvements", "Community gardens"] },
+                    { title: "Community Building", Rationale: "Strengthen ties, interaction.", Examples: ["Community growing", "Events in centre"], Eligible: ["Support for community hubs", "Inclusive events"] },
+                    { title: "Education & Skills (Community)", Rationale: "Accessible learning.", Examples: ["Apprenticeship help", "Work experiences"], Eligible: ["Community workshops", "Informal learning groups"] }
+                ]
+            };
+            
+            const brandColors = {
+                deepPurple: getComputedStyle(document.documentElement).getPropertyValue('--brand-deep-purple').trim(),
+                lightPurple: getComputedStyle(document.documentElement).getPropertyValue('--brand-light-purple').trim(),
+                accentYellow: getComputedStyle(document.documentElement).getPropertyValue('--brand-accent-yellow').trim(),
+                accentGreen: getComputedStyle(document.documentElement).getPropertyValue('--brand-accent-green').trim(),
+                accentBlue: getComputedStyle(document.documentElement).getPropertyValue('--brand-accent-blue').trim(),
+                accentPinkRed: getComputedStyle(document.documentElement).getPropertyValue('--brand-accent-pinkred').trim(),
+                textDark: getComputedStyle(document.documentElement).getPropertyValue('--text-dark').trim(),
+            };
+
+            function createAccordionItem(item, index) {
+                const Rationale = item.Rationale || "N/A";
+                const Examples = Array.isArray(item.Examples) ? item.Examples.join(', ') : (item.Examples || "N/A");
+                const Eligible = Array.isArray(item.Eligible) ? `<ul>${item.Eligible.map(e => `<li class='list-disc ml-5'>${e}</li>`).join('')}</ul>` : (item.Eligible || "N/A");
+
+                return `
+                    <div class="mb-2">
+                        <button class="accordion-button" data-index="${index}">
+                            ${item.title}
+                        </button>
+                        <div class="accordion-content">
+                            <p class="font-semibold text-sm text-gray-600 mb-1">Rationale:</p>
+                            <p class="text-sm mb-3">${Rationale}</p>
+                            <p class="font-semibold text-sm text-gray-600 mb-1">Community Examples (Non-Statutory):</p>
+                            <p class="text-sm mb-3">${Examples}</p>
+                            <p class="font-semibold text-sm text-gray-600 mb-1">Eligible Initiative Types:</p>
+                            <div class="text-sm">${Eligible}</div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            function loadInitiatives(area) {
+                const container = document.getElementById(`${area}-initiatives`);
+                if (container && initiativeData[area]) {
+                    container.innerHTML = initiativeData[area].map((item, index) => createAccordionItem(item, index)).join('');
+                    addAccordionListeners(container);
+                }
+            }
+
+            function addAccordionListeners(container) {
+                container.querySelectorAll('.accordion-button').forEach(button => {
+                    button.addEventListener('click', () => {
+                        const content = button.nextElementSibling;
+                        content.classList.toggle('open');
+                    });
+                });
+            }
+            
+            loadInitiatives('trevethin');
+            loadInitiatives('blaenavon');
+            loadInitiatives('thornhill');
+
+            if(exploreAreasMainLink) {
+                exploreAreasMainLink.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    if(exploreAreasSubNav) exploreAreasSubNav.classList.toggle('hidden');
+                });
+            }
+
+            navLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const sectionId = this.dataset.section;
+                    const isSubLink = this.classList.contains('sub-link');
+
+                    navLinks.forEach(l => l.classList.remove('active'));
+                    this.classList.add('active');
+
+                    if (isSubLink) {
+                        activeSubLink = this;
+                        if(exploreAreasMainLink) exploreAreasMainLink.classList.add('active'); 
+                    } else {
+                        activeSubLink = null;
+                    }
+                    if (sectionId === "explore-areas-main" && exploreAreasSubNav && exploreAreasSubNav.classList.contains('hidden')) {
+                        exploreAreasSubNav.classList.remove('hidden');
+                    }
+
+                    contentSections.forEach(section => {
+                        section.classList.toggle('active', section.id === sectionId || section.dataset.areaContent === sectionId);
+                    });
+                    if (sectionId === "explore-areas-main" && !isSubLink) {
+                        const mainExploreSection = document.getElementById('explore-areas-main');
+                        if(mainExploreSection) mainExploreSection.classList.add('active');
+                    }
+                });
+            });
+
+            const chartTooltipTitleCallback = (tooltipItems) => {
+                const item = tooltipItems[0];
+                let label = item.chart.data.labels[item.dataIndex];
+                return Array.isArray(label) ? label.join(' ') : label;
+            };
+
+            const processChartLabels = (labels, maxLength = 16) => {
+                return labels.map(label => {
+                    if (typeof label === 'string' && label.length > maxLength) {
+                        const words = label.split(' ');
+                        const newLabel = [];
+                        let currentLine = '';
+                        words.forEach(word => {
+                            if ((currentLine + word).length > maxLength && currentLine.length > 0) {
+                                newLabel.push(currentLine.trim());
+                                currentLine = word + ' ';
+                            } else {
+                                currentLine += word + ' ';
+                            }
+                        });
+                        if (currentLine.trim().length > 0) newLabel.push(currentLine.trim());
+                        return newLabel.length > 0 ? newLabel : [label];
+                    }
+                    return [label]; 
+                });
+            };
+            
+            const commonChartOptions = (legendDisplay = true, customColors = [brandColors.accentBlue, brandColors.accentGreen, brandColors.accentYellow, brandColors.accentPinkRed, brandColors.lightPurple]) => ({
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: legendDisplay, position: 'top', labels: { color: brandColors.textDark } },
+                    tooltip: { callbacks: { title: chartTooltipTitleCallback }, backgroundColor: 'rgba(0, 0, 0, 0.8)' }
+                },
+                scales: {
+                    y: { beginAtZero: true, ticks: { color: brandColors.textDark }, grid: { color: 'rgba(0,0,0,0.05)' } },
+                    x: { ticks: { color: brandColors.textDark, autoSkip: false, maxRotation: 45, minRotation: 0 }, grid: { display: false } }
+                },
+                datasets: { // This structure for default dataset properties might not be standard. Usually applied per dataset.
+                    bar: {
+                        backgroundColor: customColors, // This will likely be overridden by dataset-specific backgroundColor
+                    }
+                }
+            });
+
+            const panTorfaenChartColors = [brandColors.accentBlue, brandColors.accentGreen, brandColors.accentYellow, brandColors.accentPinkRed, brandColors.lightPurple];
+            const panTorfaenThemesCtx = document.getElementById('panTorfaenThemesChart')?.getContext('2d');
+            if (panTorfaenThemesCtx) {
+                new Chart(panTorfaenThemesCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: processChartLabels(['Youth Engagement', 'Community Cohesion', 'Environment (Community-Led)', 'Health & Wellbeing (Community-Led)', 'Older People Support']),
+                        datasets: [{
+                            label: 'Prevalence of Theme (Illustrative)',
+                            data: [90, 80, 75, 85, 70],
+                            backgroundColor: panTorfaenChartColors, // Apply array of colors here
+                            borderColor: '#FFFFFF', borderWidth: 1
+                        }]
+                    },
+                    options: commonChartOptions(false) // Removed customColors from here as it's in dataset
+                });
+            }
+
+            const trevethinPrioritiesCtx = document.getElementById('trevethinPrioritiesChart')?.getContext('2d');
+            if (trevethinPrioritiesCtx) {
+                new Chart(trevethinPrioritiesCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: processChartLabels(initiativeData.trevethin.map(i => i.title)),
+                        datasets: [{
+                            label: 'Priority Score (Illustrative)',
+                            data: [90, 85, 75, 70, 65],
+                            backgroundColor: brandColors.accentGreen, // Single color for this chart's bars
+                        }]
+                    },
+                    options: commonChartOptions(false)
+                });
+            }
+
+            const blaenavonPrioritiesCtx = document.getElementById('blaenavonPrioritiesChart')?.getContext('2d');
+            if (blaenavonPrioritiesCtx) {
+                new Chart(blaenavonPrioritiesCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: processChartLabels(initiativeData.blaenavon.map(i => i.title)),
+                        datasets: [{
+                            label: 'Priority Score (Illustrative)',
+                            data: [95, 88, 78, 65, 62],
+                            backgroundColor: brandColors.accentBlue, // Single color
+                        }]
+                    },
+                    options: commonChartOptions(false)
+                });
+            }
+            
+            const thornhillPrioritiesCtx = document.getElementById('thornhillPrioritiesChart')?.getContext('2d');
+            if (thornhillPrioritiesCtx) {
+                new Chart(thornhillPrioritiesCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: processChartLabels(initiativeData.thornhill.map(i => i.title)),
+                        datasets: [{
+                            label: 'Priority Score (Illustrative)',
+                            data: [92, 89, 77, 72, 68],
+                            backgroundColor: brandColors.accentYellow, // Single color
+                        }]
+                    },
+                    options: commonChartOptions(false)
+                });
+            }
+
+            const initialActiveLink = document.querySelector('.nav-link[data-section="overview"]');
+            if(initialActiveLink) initialActiveLink.click();
+        });
+    </script>
+</body>
+</html>
+```
+
+**Key change in this version:**
+The entire block of JavaScript code at the end is now wrapped like this:
+
+```javascript
+document.addEventListener('DOMContentLoaded', function() {
+    // ... all your existing JavaScript code ...
+});
+```
+
+**Additional things to consider if the problem persists with the updated code:**
+
+4.  **How is it Embedded?** The method you use to embed the HTML into SharePoint (e.g., Content Editor web part, Embed web part, File Viewer web part pointing to the HTML file) can significantly affect how scripts behave.
+    * The **Embed web part** using an `<iframe>` is often more reliable for complex HTML/JS as it isolates the content.
+    * The **Content Editor web part** can sometimes have issues with scripts if not handled carefully.
+    * If you've uploaded the HTML file to a SharePoint document library and are using a **File Viewer web part**, ensure the library permissions allow execution or proper rendering.
+
+5.  **Relative Path for Logo:** The logo `src="image.png"` is a relative path. When embedded in SharePoint, the HTML file might not be in the same "directory" as the image.
+    * **Solution:** Upload your `image.png` to a SharePoint library (e.g., Site Assets) and use the full, direct URL to that image in the `src` attribute. The `onerror` attribute currently provides a placeholder if the image isn't found, which is good.
+
+Please try the updated code first, and definitely check the browser console for errors. Let me know what you fi
